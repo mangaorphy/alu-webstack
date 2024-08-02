@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
-# script to config domain zone to point to load balancer
-# add more subdomains and display info about them
+# bash file for the work
 
-domain=$1
-if [ "$#" -eq 2 ]; then
-   sub=$2
+
+if [ $# == 2 ]; then
+    domain=$1
+    subdomain=$2
+    SUB_DOMAINS=$subdomain
 else
-	sub=("www" "lb-01" "web-01" "web-02")
+    domain=$1
+    SUB_DOMAINS=("www" "lb-01" "web-01" "web-02")
 fi
-for subdomain in "${sub[@]}"; do
-    output=$(dig "$subdomain.$domain" | grep -A1 'ANSWER SECTION:' | tail -n -1 | awk '{ print "The subdomain " $1 " is a " $4 " record and points to " $5 }')
-    echo "$output"
+
+for sub in ${SUB_DOMAINS[@]}; do
+    record_type="$(dig "$sub.$domain" | grep -A1 'ANSWER SECTION:' | tail -1 | awk '{print $4}')"
+    destination=$(dig +short "$sub.$domain" | awk '{print $1}')
+    echo "The subdomain $sub is a $record_type record and points to $destination"
 done
